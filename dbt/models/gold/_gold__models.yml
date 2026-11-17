@@ -1,0 +1,187 @@
+version: 2
+
+models:
+  - name: dim_trial
+    description: Trial information, with display labels
+    columns:
+      - name: nct_id
+        description: ClinicalTrials.gov study ID
+        data_tests: [unique, not_null]
+      - name: study_url
+        description: Link to ClinicalTrials.gov study page
+      - name: status_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Active', 'Completed', 'Stopped Early', 'Other / Unknown']
+      - name: phase_sort
+        description: Sort order for phase_group
+      - name: sponsor_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sponsor')
+                field: sponsor_key
+  
+  - name: dim_sponsor
+    description: Sponsor information
+    columns:
+      - name: sponsor_key
+        description: Synthetic key for sponsors
+        data_tests: [unique, not_null]
+      - name: sponsor_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Industry', 'U.S. federal', 'Academic & other']
+  
+  - name: dim_condition_group
+    description: Condition groups with matching CDC PLACES measure.
+    columns:
+      - name: condition_group
+        data_tests: [unique, not_null]
+  
+  - name: dim_county
+    description: U.S. counties from CDC PLACES
+    columns:
+      - name: county_fips
+        description: 5-character county FIPS code
+        data_tests: [unique, not_null]
+      - name: adult_population
+        description: Adults 18+ (PLACES)
+  
+  - name: bridge_trial_condition_group
+    description: Many-to-many link between trials and condition group
+    columns:
+      - name: nct_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trial')
+                field: nct_id
+      - name: condition_group
+        data_tests: 
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_condition_group')
+                field: condition_group
+  
+  - name: fct_results_reporting
+    description: Trials where their results deadline (+30 days) has passed.
+    columns:
+      - name: nct_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trial')
+                field: nct_id
+      - name: sponsor_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_sponsor')
+                field: sponsor_key
+      - name: reporting_status
+        data_tests: 
+          - accepted_values:
+              arguments:
+                values: ['on_time', 'delay_requested', 'late', 'not_reported']
+      - name: is_compliance_eligible
+        description: 1 = probably ACT without delay request
+      - name: days_late
+        description: Days after the due date that results were submitted (negative = early). Null if not reported.
+  
+  - name: fct_trial_terminations
+    description: Terminated, withdrawn, and suspended trials.
+    columns:
+      - name: nct_id
+        data_tests: 
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trial')
+                field: nct_id
+      - name: overall_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['TERMINATED', 'WITHDRAWN', 'SUSPENDED']
+      - name: participants_enrolled
+        description: Actual enrollment when the trial stopped (NULL if onlly an estimate was reported).
+  
+  - name: fct_trial_sites
+    description: U.S. trial sites, county_fips is NULL where the ZIP could not be mapped.
+    columns:
+      - name: site_id
+        data_tests: [unique, not_null]
+      - name: nct_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_trial')
+                field: nct_id
+      - name: county_fips
+        description: Can point at counties PLACES doesn't cover, hencer 'severity:warn'.
+        data_tests:
+          - relationships:
+              arguments: 
+                to: ref('dim_county')
+                field: county_fips
+              config:
+                severity: warn
+
+  
+  - name: mart_county_burden_vs_sites
+    description: >
+      County x condition group intersection. Compares disease burden (age-adjusted prevalence) with access (active trial sites per 10k affected adults)
+      as percentiles within each condition group.
+    columns:
+      - name: county_fips
+        data_tests: 
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_county')
+                field: county_fips
+      - name: condition_group
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_condition_group')
+                field: condition_group
+      - name: gap_category
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['High burden, no active sites', 'High burden, low access',
+                        'Low burden, high access', 'In Between', 'Insufficient Data']
+      - name: is_small_county
+        description: 1 = few than 10,000 adults.
+
+exposures:
+  - name: clinical_trial_transparency_dashboard
+    label: Clinical Trial Transparency Dashboard
+    type: dashboard
+    maturity: medium
+    description: >
+      Tableau / Power BI dashboard answering Q1 (results reporting), Q2 (early stops)
+      and Q3 (trial sites vs. disease burden).
+    depends_on:
+      - ref('dim_trial')
+      - ref('dim_sponsor')
+      - ref('dim_condition_group')
+      - ref('dim_county')
+      - ref('bridge_trial_condition_group')
+      - ref('fct_results_reporting')
+      - ref('fct_trial_terminations')
+      - ref('fct_trial_sites')
+      - ref('mart_county_burden_vs_sites')
+    owner:
+      name: Edidiong Ekpoh

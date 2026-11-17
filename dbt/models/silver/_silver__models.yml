@@ -1,0 +1,153 @@
+version: 2
+
+models:
+  - name: slv_ctgov__latest_versions
+    description: Latest stored version of each study. Selected by lastUpdatedPostDate, then load time. Base for all silver models.
+    columns:
+      - name: nct_id
+        data_tests: [unique, not_null]
+      - name: versions_stored
+        description: The number of distinct versions of this study that the BRONZE layer has.
+  
+  - name: slv_ctgov__studies
+    description: Latest versions of each study.
+    columns:
+      - name: nct_id
+        data_tests: [unique, not_null]
+      - name: study_type
+        description: Always INTEREVENTIONAL
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['INTERVENTIONAL']
+              config:
+                severity: warn
+      - name: overall_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ACTIVE_NOT_RECRUITING', 'COMPLETED', 'ENROLLING_BY_INVITATION',
+                        'NOT_YET_RECRUITING', 'RECRUITING', 'SUSPENDED', 'TERMINATED',
+                        'WITHDRAWN', 'UNKNOWN', 'AVAILABLE', 'NO_LONGER_AVAILABLE', 'TEMPORARILY_NOT_AVAILABLE',
+                        'APPROVED_FOR_MARKETING', 'WITHHELD']
+              config:
+                severity: warn
+      - name: phase_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Early Phase 1', 'Phase 1', 'Phase 1/2', 'Phase 2', 'Phase 2/3', 'Phase 3', 'Phase 4',
+                        'Not Applicable', 'Not Reported', 'Other']
+      - name: sponsor_group
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Industry', 'U.S. federal', 'Academic & other']
+      - name: primary_completion_date_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['ACTUAL', 'ESTIMATED']
+      - name: enrollment_count
+        description: Planned (ESTIMATED) or actual (ACTUAL) enrollment; see enrollment_type.
+  
+  - name: slv_ctgov__conditions
+    description: Free-text conditions, one row per study x condition.
+    columns:
+      - name: nct_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_ctgov__studies')
+                field: nct_id
+  
+  - name: slv_ctgov__conditions_mesh
+    description: MeSH terms and their ancestors per study.
+    columns:
+      - name: nct_id
+        data_tests: [not_null]
+      - name: term_source
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['mesh', 'ancestor']
+  
+  - name: slv_ctgov__locations
+    description: Trial sites, one row per study x location.
+    columns:
+      - name: nct_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_ctgov__studies')
+                field: nct_id
+  
+  - name: slv_ctgov__interventions
+    description: One row per study x intervention.
+    columns:
+      - name: nct_id
+        data_tests: [not_null]
+  
+  - name: slv_ctgov__study_status_history
+    description: Type-2 history of status, enrollment, and primary completion date.
+    columns:
+      - name: record_hash
+        data_tests: [unique, not_null]
+      - name: valid_from
+        data_tests: [not_null]
+  
+  - name: slv_cdc__places_county
+    description: CDC PLACES county estimates. 
+    columns:
+      - name: county_fips
+        data_tests: [not_null]
+      - name: measure_id
+        data_tests: [not_null]
+      - name: data_value_type_id
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['CrdPrv', 'AgeAdjPrv']
+  
+  - name: slv_trials__results_timeliness
+    description: Interventional studies with an actual primary completion date whose reults deadline (+30-day grace) has passed.
+    columns:
+      - name: nct_id
+        data_tests: [unique, not_null]
+      - name: reporting_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['on_time', 'delay_requested', 'late', 'not_reported']
+  
+  - name: slv_trials__termination_reasons
+    description: Terminated, withdrawn and suspended studies with a categorized stop reason. 
+    columns:
+      - name: nct_id
+        data_tests: [unique, not_null]
+      - name: reason_category
+        data_tests: [not_null]
+  
+  - name: slv_sites__county
+    description: U.S. trial sites with a county FIPS code (largest residential share of the ZIP).
+    columns:
+      - name: nct_id
+        data_tests: [not_null]
+  
+  - name: slv_trials__condition_groups
+    description: Study-to-condition-htoup bridge.
+    columns:
+      - name: nct_id
+        data_tests: [not_null]
+      - name: condition_group
+        data_tests: 
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('condition_group_map')
+                field: condition_group

@@ -1,0 +1,44 @@
+version: 2
+
+seeds: 
+  - name: sponsor_class_map
+    description: Maps ClinicalTrials.gov lead sponsor classes to the 3 analysis groups.
+    config:
+      column_types:
+        sponsor_class: varchar
+        sponsor_group: varchar
+        sponsor_class_description: varchar
+    columns:
+      - name: sponsor_class
+        data_tests: [unique, not_null]
+      - name: sponsor_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Industry', 'U.S. federal', 'Academic & other']
+  
+  - name: condition_group_map
+    description: MeSH terms mapped to condition groups and the matching CDC PLACES measure
+    config:
+      column_types:
+        mesh_term: varchar
+        condition_group: varchar
+        places_measure_id: varchar
+      columns:
+        - name: mesh_term
+          data_tests: [unique, not_null]
+        - name: condition_group
+          data_tests: [not_null]
+  
+  - name: zip_county_crosswalk
+    description: HUD-WSPS ZIP-to-country crosswalk, reduced to 3 columns (zip, county, res_ratio=share of ZIP's residential address in that given county)
+    config:
+      column_types:
+        zip: varchar(5)
+        county_fips: varchar(5)
+        res_ratio: float
+    columns:
+      - name: zip
+        data_tests: [not_null]
+      - name: county_fips
+        data_tests: [not_null]

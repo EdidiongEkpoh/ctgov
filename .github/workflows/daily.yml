@@ -1,0 +1,105 @@
+name: dailyl-pipeline
+
+on: 
+    schedule:
+        - cron: "0 19 * * *"
+    workflow_dispatch:
+        inputs:
+            ctgov_mode:
+                description: "ClinicalTrials.gov extract mode"
+                type: choice
+                options: [incremental, backfill]
+                default: incremental
+            run_places:
+                description: "Also pull CDC PLACES (only needed once per annual release)"
+                type: boolean
+                default: false
+
+concurrency:
+    group: daily-pipeline
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    pipeline:
+        runs-on: ubuntu-latest
+        timeout-minutes: 90 
+
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+            CTGOV_S3_BUCKET: ${{ secrets.CTGOV_S3_BUCKET }}
+            SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+            SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+            SNOWFLAKE_WAREHOUSE: CTGOV_WH
+            SNOWFLAKE_DATABASE: CTGOV
+            SNOWFLAKE_LOADER_USER: SVC_LOADER
+            SNOWFLAKE_LOADER_ROLE: LOADER
+            SNOWFLAKE_LOADER_PRIVATE_KEY_PATH: ${{ github.workspace }}/.keys/svc_loader.p8
+            SNOWFLAKE_LOADER_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY_PASSPHRASE }}
+
+            SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+            DBT_PROFILES_DIR: ${{ github.workspace }}/dbt
+        
+        steps:
+            - name: Check out the repo
+              uses: actions/checkout@v4
+            
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with: 
+                python-version: "3.12"
+                cache: pip
+            
+            - name: Install dependencies
+              run: pip install -r requirements.txt
+            
+            - name: Write Snowflake private key to files
+              env:
+                LOADER_KEY: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY }}
+              run: |
+                mkdir -p .keys
+                printf '%s\n' "LOADER_KEY" > .keys/svc_loader.p8
+                chmod 600 .keys/*.p8
+            
+            - name: Extract ClinicalTrials.gov
+              run: python extract/ctgov.py --mode "${{ inputs.ctgov_mode || 'incremental'}}"
+            
+            - name: Extract CDC PLACES
+              if: ${{ inputs.run_places }}
+              run: python extract/places.py
+            
+            - name: Load S3 files into STAGING
+              run: python extract/load.py
+            
+            - name: Install dbt packages
+              working-directory: dbt
+              run: if [ -f packages.yml ]; then dbt deps; fi
+            
+            - name: Check source freshness
+              working-directory: dbt
+              run: dbt source freshness --target prod
+            
+            - name: Build and test (BRONZE, SILVER, and GOLD layers)
+              working-directory: dbt
+              run: dbt build --target prod
+            
+            - name: Upload dbt logs and results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@v4
+              with:
+                name: dbt-artifacts-${{ github.run_id }}
+                path: |
+                  dbt/target/run_results.json
+                  dbt/target/sources.json
+                  dbt/logs/dbt.log
+                if-no-files-found: ignore
+                retention-days: 14
+            
+            - name: Remove key files
+              if: ${{ always() }}
+              run: rm -rf .keys
+              

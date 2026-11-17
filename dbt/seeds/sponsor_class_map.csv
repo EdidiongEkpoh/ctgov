@@ -1,0 +1,10 @@
+sponsor_class,sponsor_group,sponsor_class_description
+INDUSTRY,Industry,Pharmaceutical / device / biotech company
+NIH,U.S. federal,U.S. National Institutes of Health
+FED,U.S. federal,Other U.S. federal agency
+OTHER_GOV,Academic & other,Non-federal or non-U.S. government body
+NETWORK,Academic & other,Non-federal or non-U.S. government body
+INDIV,Academic & other,Individual investigator
+OTHER,Academic & other,Universities; hospitals; foundations; other organizations
+AMBIG,Academic & other,Ambiguous classification
+UNKNOWN,Academic & other,Not classified

@@ -1,0 +1,26 @@
+ctgov:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      threads: 4
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      role: "{{ env_var('SNOWFLAKE_DBT_ROLE') }}"
+      database: CTGOV
+      warehouse: CTGOV_WH
+      schema: "{{ env_var('SNOWFLAKE_DBT_SCHEMA', 'DEV') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      query_tag: ctgov-pipeline:dbt-dev
+    
+    prod: 
+      type: snowflake
+      threads: 4
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      role: "{{ env_var('SNOWFLAKE_DBT_ROLE') }}"
+      database: CTGOV
+      warehouse: CTGOV_WH
+      schema: PUBLIC
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      query_tag: ctgov-pipeline:dbt-prod

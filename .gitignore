@@ -1,0 +1,16 @@
+.venv/ 
+.env
+.env.*
+!.env.example
+*.p8
+*.pem
+*.key
+.keys/
+logs/
+dbt/logs/
+dbt/.user.yml
+dbt/package-lock.yml
+scripts/__pycache__/
+.pytest_cache/
+dbt/.vscode
+scripts/data/

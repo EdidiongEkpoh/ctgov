@@ -1,0 +1,13 @@
+mesh_term,condition_group,places_measure_id
+Diabetes Mellitus,diabetes,DIABETES
+"Pulmonary Disease, Chronic Obstructive",copd,COPD
+Coronary Disease,coronary_heart_disease,CHD
+Coronary Artery Disease,coronary_heart_disease,CHD
+Stroke,stroke,STROKE
+Asthma,asthma,CASTHMA
+Neoplasms,cancer,CANCER 
+"Renal Insufficiency, Chronic",chronic_kidney_disease,KIDNEY
+Depressive Disorder,depression,DEPRESSION
+Obesity,obesity,OBESITY
+Hypertension,hypertension,BPHIGH
+Arthritis,arthritis,ARTHRITIS

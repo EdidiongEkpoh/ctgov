@@ -1,0 +1,33 @@
+name: ctgov
+
+profile: ctgov
+
+
+seed-paths: ["seeds"]
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ['tests']
+snapshot-paths: ['snapshots']
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  ctgov:
+    bronze:
+      +schema: bronze
+      +materialized: incremental
+      +transient: false
+      +full_refresh: "{{ false if target.name == 'prod' else none}}"
+    silver:
+      +schema: silver
+      +materialized: view
+    gold:
+      +schema: gold
+      +materialized: table
+
+seeds:
+  ctgov:
+    +schema: silver
+

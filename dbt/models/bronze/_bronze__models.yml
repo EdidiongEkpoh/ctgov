@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: brz_ctgov__studies
+    description: Append-only history of every distinct version of every ClinicalTrials.gov study.
+    columns:
+      - name: nct_id
+        description: ClinicalTrials.gov study ID
+        data_tests:
+          - not_null
+      - name: last_update_post_date_raw
+        description: lastUpdatePostDate in the JSON from API, but as text. It's used in the silver layer to pick the latest version
+      - name: record_hash
+        description: MD5 of the record JSON
+        data_tests:
+          - not_null
+          - unique
+      - name: record
+        description: Raw JSON of the study details.
+        data_tests:
+          - not_null
+      - name: source_file
+        description: file name from the S3 bucket.
+      - name: loaded_at
+        description: When the version reached the transient staging table.
+        data_tests:
+          - not_null
+  
+  - name: brz_cdc__places_county
+    description: Append-only history of every distinct CDC PLACES country row across releases
+    columns: 
+      - name: release
+        description: PLACES release year, parsed from the S3 path.
+        data_tests:
+          - not_null
+      - name: location_id
+        description: County FIPS code (text)
+        data_tests:
+          - not_null
+      - name: measure_id
+        data_tests:
+          - not_null
+      - name: data_value_type_id
+        description: CrdPrv (crude) or AgeAdjPrv (age-adjusted)
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['CrdPrv', 'AgeAdjPrv']
+      - name: record_hash
+        data_tests:
+          - unique
+          - not_null
+      - name: record
+        data_tests:
+          - not_null
+      - name: loaded_at
+        data_tests:
+          - not_null

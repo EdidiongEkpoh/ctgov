@@ -1,0 +1,51 @@
+version : 2
+
+sources: 
+  - name: staging
+    description: Transient landing tables that holds data copied from S3 bucket. 
+    database: CTGOV
+    schema: STAGING
+    
+    config: 
+      loaded_at_field: loaded_at
+      freshness:
+        warn_after: {count: 2, period: day}
+        error_after: {count: 4, period: day}
+
+    tables:
+      - name: ctgov_studies
+        description: >
+          ClinicalTrials.gov API v2 study records. Duplicates across runs are expected due to potential re-pulls and same day
+          incremental overlaps. The BRONZE layer dedupes the data on record_hash.
+        columns:
+          - name: record
+            description: Full study JSON as returned by the API.
+            data_tests:
+              - not_null
+          - name: file_name
+            description: S3 path of the file that this row came from.
+            data_tests:
+              - not_null
+          - name: loaded_at
+            description: Timestamp of when the data was loaded in the row.
+            data_tests:
+              - not_null
+      
+      - name: cdc_places_county
+        description: CDC PLACES county-level estimates (county x measure x value type) from extract/places.py. Published annually.
+        config:
+          freshness: null
+        columns:
+          - name: record
+            description: One PLACES row from SOCRATA API.
+            data_tests:
+              - not_null
+          - name: file_name
+            data_tests:
+              - not_null
+          - name: loaded_at
+            data_tests:
+              - not_null
+
+
+    
