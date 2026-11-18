@@ -60,21 +60,10 @@ jobs:
                 LOADER_KEY: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY  }}
               run: |
                 mkdir -p .keys
-                printf '%s\n' "LOADER_KEY" > .keys/svc_loader.p8
+                printf '%s\n' "$LOADER_KEY" > .keys/svc_loader.p8
                 chmod 600 .keys/*.p8
 
-            - name: Debug Snowflake auth (temporary - remove after)
-              run: |
-                f=.keys/svc_loader.p8
-                echo "lines in key file: $(wc -l < $f)"            # ~28 for a 2048-bit key; 1-2 means it's empty/mangled
-                head -1 "$f"                                        # must be: -----BEGIN PRIVATE KEY-----
-                echo "carriage returns: $(grep -c $'\r' "$f" || true)"   # must be 0
-                echo -n "fingerprint: SHA256:"
-                openssl pkey -in "$f" -pubout -outform DER | openssl dgst -sha256 -binary | openssl enc -base64
-                echo "user=$SNOWFLAKE_LOADER_USER role=$SNOWFLAKE_LOADER_ROLE"
-                echo "account length: ${#SNOWFLAKE_ACCOUNT}"
-                [[ "$SNOWFLAKE_ACCOUNT" == *snowflakecomputing* ]] && echo "ACCOUNT CONTAINS THE DOMAIN - remove it" || true
-                [[ "$SNOWFLAKE_ACCOUNT" == *.* ]] && echo "ACCOUNT CONTAINS A DOT - use orgname-accountname" || true
+            
             - name: Extract ClinicalTrials.gov
               run: python scripts/ctgov.py --mode "${{ inputs.ctgov_mode || 'incremental'}}"
             
