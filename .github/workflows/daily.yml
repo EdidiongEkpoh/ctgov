@@ -38,7 +38,7 @@ jobs:
             SNOWFLAKE_LOADER_USER: SVC_LOADER
             SNOWFLAKE_LOADER_ROLE: LOADER
             SNOWFLAKE_LOADER_PRIVATE_KEY_PATH: ${{ github.workspace }}/.keys/svc_loader.p8
-
+            SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
             SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
             DBT_PROFILES_DIR: ${{ github.workspace }}/dbt
         
