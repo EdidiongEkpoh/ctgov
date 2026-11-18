@@ -75,8 +75,8 @@ jobs:
                 echo "account length: ${#SNOWFLAKE_ACCOUNT}"
                 [[ "$SNOWFLAKE_ACCOUNT" == *snowflakecomputing* ]] && echo "ACCOUNT CONTAINS THE DOMAIN - remove it" || true
                 [[ "$SNOWFLAKE_ACCOUNT" == *.* ]] && echo "ACCOUNT CONTAINS A DOT - use orgname-accountname" || true
-                  - name: Extract ClinicalTrials.gov
-                    run: python scripts/ctgov.py --mode "${{ inputs.ctgov_mode || 'incremental'}}"
+            - name: Extract ClinicalTrials.gov
+              run: python scripts/ctgov.py --mode "${{ inputs.ctgov_mode || 'incremental'}}"
             
             - name: Extract CDC PLACES
               if: ${{ inputs.run_places }}
