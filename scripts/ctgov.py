@@ -43,7 +43,7 @@ def fetch_pages(params, page_size=1000, pause=0.5):
 
 def read_watermark(bucket):
     state = read_json(bucket, STATE_KEY)
-    return dt.date.fromisoformat(state['last_success_datte']) if state else None
+    return dt.date.fromisoformat(state['last_success_date']) if state else None
 
 def build_filter(mode, since):
     if mode == "backfill":
@@ -61,7 +61,8 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
+    for key, value in os.environ.items():
+        print(f"{key}: {value}")
     bucket = os.environ["CTGOV_S3_BUCKET"]
     run_ts = dt.datetime.now(dt.timezone.utc)
     run_prefix = f"{RAW_PREFIX}/ingest_date={run_ts:%Y-%m-%d}/run={run_ts:%H%M%S}"
