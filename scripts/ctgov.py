@@ -12,7 +12,7 @@ RAW_PREFIX = "source/studies"
 STATE_KEY = "source/_state/ctgov_watermark.json"
 MANIFEST_PREFIX = "source/_manifests"
 
-log = logging.getLogger("extract.ctgov")
+log = logging.getLogger("ctgov")
 
 
 def fetch_pages(params, page_size=1000, pause=0.5):

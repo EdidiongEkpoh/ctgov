@@ -1,4 +1,4 @@
-name: dailyl-pipeline
+name: daily-pipeline
 
 on: 
     schedule:
@@ -59,21 +59,21 @@ jobs:
             
             - name: Write Snowflake private key to files
               env:
-                LOADER_KEY: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY }}
+                LOADER_KEY: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY_PATH  }}
               run: |
                 mkdir -p .keys
                 printf '%s\n' "LOADER_KEY" > .keys/svc_loader.p8
                 chmod 600 .keys/*.p8
             
             - name: Extract ClinicalTrials.gov
-              run: python extract/ctgov.py --mode "${{ inputs.ctgov_mode || 'incremental'}}"
+              run: python scripts/ctgov.py --mode "${{ inputs.ctgov_mode || 'incremental'}}"
             
             - name: Extract CDC PLACES
               if: ${{ inputs.run_places }}
-              run: python extract/places.py
+              run: python scripts/places.py
             
             - name: Load S3 files into STAGING
-              run: python extract/load.py
+              run: python scripts/load.py
             
             - name: Install dbt packages
               working-directory: dbt

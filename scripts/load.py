@@ -3,7 +3,10 @@ import logging
 import os 
 import sys 
 from dataclasses import dataclass
-log = logging.getLogger("load.copy_into_staging")
+from dotenv import load_dotenv
+log = logging.getLogger("load")
+
+load_dotenv()
 
 STAGE = "CTGOV.STAGING.S3_CTGOV"
 FILE_PATTERN = ".*[.]json[.]gz"
@@ -25,13 +28,13 @@ def copy_sql(t):
                 SELECT $1, METADATA$FILENAME 
                 FROM @{STAGE}/{t.stage_path} 
                  )
-            PATTERN = '{FILE_PATTERN} 
+            PATTERN = '{FILE_PATTERN}'
             ON_ERROR = ABORT_STATEMENT
             """.strip()
 
 def purge_sql(t, days):
     return (
-        f"DELETE FROM {t.table}"
+        f"DELETE FROM {t.table} "
         f"WHERE loaded_at < DATEADD(day, -{int(days)}, CURRENT_TIMESTAMP())"
     )
 
@@ -51,7 +54,7 @@ def connect():
         account=os.environ["SNOWFLAKE_ACCOUNT"],
         user=os.environ["SNOWFLAKE_LOADER_USER"],
         role=os.environ["SNOWFLAKE_LOADER_ROLE"],
-        warehouse=os.environ("SNOWFLAKE_WAREHOUSE"),
+        warehouse=os.environ["SNOWFLAKE_WAREHOUSE"],
         database=os.environ["SNOWFLAKE_DATABASE"],
         authenticator="SNOWFLAKE_JWT",
         private_key_file=os.environ["SNOWFLAKE_LOADER_PRIVATE_KEY_PATH"],
@@ -101,7 +104,7 @@ def main():
     try:
         cur = conn.cursor()
         totals = {t.name: run_copy(cur, t) for t in targets}
-        if not args.no_purse:
+        if not args.no_purge:
             for t in targets:
                 run_purge(cur, t, args.purge_days)
     finally:

@@ -26,7 +26,7 @@ DEFAULT_MEASURES = [
 RAW_PREFIX = "source/cdc_places/county"
 MANIFEST_PREFIX = "source/cdc_places/_manifests"
 
-log = logging.getLogger("extract.places")
+log = logging.getLogger("places")
 
 def build_where(measures: list[str] | None) -> str | None:
     if not measures:

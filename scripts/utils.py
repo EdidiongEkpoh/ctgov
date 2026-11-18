@@ -11,7 +11,7 @@ from tenacity import (
     before_sleep_log, retry, retry_if_exception, stop_after_attempt, wait_exponential
 )
 
-load_dotenv()
+
 log = logging.getLogger("extract")
 s3 = boto3.client("s3")
 session = requests.Session()
