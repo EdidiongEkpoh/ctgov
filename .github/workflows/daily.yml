@@ -33,6 +33,8 @@ jobs:
             AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
             CTGOV_S3_BUCKET: ${{ secrets.CTGOV_S3_BUCKET }}
             SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+            SNOWFLAKE_DBT_ROLE: ${{ secrets.SNOWFLAKE_DBT_ROLE }}
+            SNOWFLAKE_DBT_SCHEMA: ${{ secrets.SNOWFLAKE_DBT_SCHEMA }}
             SNOWFLAKE_WAREHOUSE: CTGOV_WH
             SNOWFLAKE_DATABASE: CTGOV
             SNOWFLAKE_LOADER_USER: SVC_LOADER
