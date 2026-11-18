@@ -32,14 +32,12 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
             CTGOV_S3_BUCKET: ${{ secrets.CTGOV_S3_BUCKET }}
-            SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
             SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
             SNOWFLAKE_WAREHOUSE: CTGOV_WH
             SNOWFLAKE_DATABASE: CTGOV
             SNOWFLAKE_LOADER_USER: SVC_LOADER
             SNOWFLAKE_LOADER_ROLE: LOADER
             SNOWFLAKE_LOADER_PRIVATE_KEY_PATH: ${{ github.workspace }}/.keys/svc_loader.p8
-            SNOWFLAKE_LOADER_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY_PASSPHRASE }}
 
             SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
             DBT_PROFILES_DIR: ${{ github.workspace }}/dbt
@@ -59,7 +57,7 @@ jobs:
             
             - name: Write Snowflake private key to files
               env:
-                LOADER_KEY: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY_PATH  }}
+                LOADER_KEY: ${{ secrets.SNOWFLAKE_LOADER_PRIVATE_KEY  }}
               run: |
                 mkdir -p .keys
                 printf '%s\n' "LOADER_KEY" > .keys/svc_loader.p8
