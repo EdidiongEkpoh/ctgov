@@ -12,6 +12,8 @@ from tenacity import (
 )
 
 
+load_dotenv()
+
 log = logging.getLogger("extract")
 s3 = boto3.client("s3")
 session = requests.Session()
@@ -53,7 +55,7 @@ def write_json(bucket, key, payload):
 
 def read_json(bucket, key):
     try:
-        obj = s3.get_paginator
+        obj = s3.get_object(Bucket=bucket, Key=key)
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchKey':
             return None
