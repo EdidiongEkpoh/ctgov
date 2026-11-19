@@ -136,7 +136,31 @@ models:
               config:
                 severity: warn
 
-  
+  - name: fct_trial_status_history
+    description: All stored versions of studies, used for trial timeline.
+    columns:
+      - name: status_version_id
+        data_tests: [unique, not_null]
+      - name: nct_id
+        data_tests: 
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trial')
+                field: nct_id
+      - name: is_status_change
+        description: 1 where 'overall_status' differs from the previous version.
+
+  - name: meta_pipeline_status
+    description: Depicts the latest ClinicalTrials.gov data load, PLACES releases, and coverage shares.
+    columns: 
+      - name: gold_built_at
+        data_tests: [not_null]
+      - name: geocoded_share
+        description: Share of U.S. sites with a ZIP that's mapped to a county (0-1).
+      - name: stop_reason_classified_share
+        description: Share of stopped trials whose reason was not labelled as 'other' or 'unspecified' (0-1).
+
   - name: mart_county_burden_vs_sites
     description: >
       County x condition group intersection. Compares disease burden (age-adjusted prevalence) with access (active trial sites per 10k affected adults)
@@ -182,6 +206,9 @@ exposures:
       - ref('fct_results_reporting')
       - ref('fct_trial_terminations')
       - ref('fct_trial_sites')
+      - ref('fct_trial_status_history')
+      - ref('meta_pipeline_status')
       - ref('mart_county_burden_vs_sites')
+
     owner:
       name: Edidiong Ekpoh
