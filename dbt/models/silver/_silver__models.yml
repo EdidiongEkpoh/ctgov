@@ -64,7 +64,7 @@ models:
                 to: ref('slv_ctgov__studies')
                 field: nct_id
   
-  - name: slv_ctgov__conditions_mesh
+  - name: slv_ctgov__condition_mesh
     description: MeSH terms and their ancestors per study.
     columns:
       - name: nct_id

@@ -7,7 +7,6 @@ ctgov:
       account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
       user: "{{ env_var('SNOWFLAKE_USER') }}"
       role: "{{ env_var('SNOWFLAKE_DBT_ROLE') }}"
-      authenticator: snowflake_jwt
       database: CTGOV
       warehouse: CTGOV_WH
       schema: "{{ env_var('SNOWFLAKE_DBT_SCHEMA', 'DEV') }}"
@@ -20,7 +19,6 @@ ctgov:
       account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
       user: "{{ env_var('SNOWFLAKE_USER') }}"
       role: "{{ env_var('SNOWFLAKE_DBT_ROLE') }}"
-      authenticator: snowflake_jwt
       database: CTGOV
       warehouse: CTGOV_WH
       schema: PUBLIC
