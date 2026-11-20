@@ -13,7 +13,7 @@ SELECT nct_id
 
     , iff(is_probable_act, 1, 0) AS is_probable_act
     , iff(is_probable_act AND reporting_status <> 'delay_requested', 1, 0) AS is_compliance_eligible
-    , iff(t.reporting_status = 'on_time', 1, 0) AS is_on_time
+    , iff(reporting_status = 'on_time', 1, 0) AS is_on_time
     , iff(reporting_status IN ('on_time', 'late'), 1, 0) AS is_reported
     , iff(reporting_status = 'not_reported', 1, 0) AS is_not_reported
     , 1 AS trial_count
