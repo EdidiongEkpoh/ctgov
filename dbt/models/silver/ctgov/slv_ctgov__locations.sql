@@ -14,7 +14,7 @@ SELECT v.nct_id
     , CASE
         WHEN loc.value:country::string = 'United States'
             AND REGEXP_LIKE(loc.value:zip::string, '^[0-9]{5}.*')
-            THEN LEFT(loc.value:zip::string, 2)
+            THEN LEFT(loc.value:zip::string, 5)
       END AS zip5
 FROM {{ ref('slv_ctgov__latest_versions') }} AS v,
     LATERAL FLATTEN(input => v.record:protocolSection:contactsLocationsModule:locations) AS loc
